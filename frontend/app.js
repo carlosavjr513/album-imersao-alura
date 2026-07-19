@@ -6,65 +6,141 @@
 const API_BASE_URL = "http://localhost:8000";
 
 // ===================================================
-// TEMA / FACÇÃO
-// O tema é trocado só pelo atributo data-theme no <html>.
-// O CSS resolve o resto via variáveis, então nada aqui
-// precisa conhecer cores nem re-inicializar o PageFlip.
+// MODO CLARO / ESCURO
+// Trocado só pelo atributo data-mode no <html>. O CSS resolve
+// o resto via variáveis, então nada aqui precisa conhecer cores
+// nem re-inicializar o PageFlip.
+//
+// Atenção: MODO não é FACÇÃO. A facção (azul Autobot / roxo
+// Decepticon) é fixa por página, declarada no data-faction do
+// HTML. O modo só decide se o papel é claro ou escuro.
 // ===================================================
-const TEMA_KEY = "alura-album-tema";
-const TEMA_PADRAO = "autobot";
+const MODO_KEY = "alura-album-modo";
+const MODO_PADRAO = "autobot";
 
 // ===================================================
-// FUNÇÃO: Preenche os slots do álbum com imagens da API
-// Esta função é chamada após o álbum ser inicializado.
+// FIGURINHAS: colar, descolar e contar
+// O estado de cada figurinha mora no backend. O frontend só
+// dispara a ação e redesenha o slot com a resposta.
 // ===================================================
-async function preencherFigurinhas() {
+
+// Acha o slot do álbum correspondente a um id de figurinha
+function slotDe(id) {
+    return document.querySelector(`.sticker-slot[data-id="${id}"]`);
+}
+
+// Insere a imagem no slot (o "colar" visual)
+function pintarSlot(slot, figurinha) {
+    // Evita empilhar imagens se a função for chamada duas vezes
+    if (slot.querySelector(".sticker-img")) return;
+
+    const img = document.createElement("img");
+    img.src = `${API_BASE_URL}${figurinha.imagem_url}`;
+    img.alt = figurinha.nome;
+    img.className = "sticker-img";
+
+    // A classe só entra quando a imagem realmente carregou: imagem
+    // quebrada nunca deve virar um slot "colado"
+    img.onload = () => slot.classList.add("slot-preenchido");
+    img.onerror = () => {
+        console.warn(`Imagem não encontrada: ${figurinha.nome}`);
+        img.remove();
+    };
+
+    slot.insertBefore(img, slot.firstChild);
+}
+
+// Remove a imagem do slot (o "descolar" visual)
+function limparSlot(slot) {
+    const img = slot.querySelector(".sticker-img");
+    if (img) img.remove();
+    slot.classList.remove("slot-preenchido");
+}
+
+// Lê GET /figurinhas/total e escreve o contador no topo da tela.
+// É o uso real do endpoint de estatísticas do backend
+async function atualizarContador() {
+    const alvo = document.getElementById("contador-valor");
+
     try {
-        // 1. Busca as figurinhas disponíveis na API
+        const response = await fetch(`${API_BASE_URL}/figurinhas/total`);
+
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+        }
+
+        const { coladas, total_album } = await response.json();
+
+        // padStart deixa "2" como "02", para o contador não mudar de
+        // largura e sacudir o layout a cada figurinha colada
+        alvo.textContent = `${String(coladas).padStart(2, "0")}/${total_album}`;
+
+    } catch (erro) {
+        // API fora do ar: o álbum continua navegável, só sem números
+        alvo.textContent = "--/30";
+    }
+}
+
+// Carrega o estado do álbum e desenha os slots já colados
+async function carregarAlbum() {
+    try {
         const response = await fetch(`${API_BASE_URL}/figurinhas`);
 
         if (!response.ok) {
             throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         }
 
-        // 2. Converte o JSON em array JavaScript
+        // A API devolve as 30 figurinhas sempre; o campo "colada"
+        // é que diz quais já estão no álbum
         const figurinhas = await response.json();
 
-        // 3. Cria um Map de id → figurinha para lookup rápido
-        //    Ex: 1 → { id: 1, nome: "Alan Turing", imagem_url: "/imgs/01-alan-turing.jpg" }
-        const porId = new Map(figurinhas.map(f => [f.id, f]));
+        for (const figurinha of figurinhas) {
+            const slot = slotDe(figurinha.id);
+            if (!slot) continue;
 
-        // 4. Percorre todos os slots do HTML
-        const slots = document.querySelectorAll(".sticker-slot");
-
-        for (const slot of slots) {
-            const slotNumeroEl = slot.querySelector(".slot-number");
-            if (!slotNumeroEl) continue;
-
-            // Extrai o número do slot: "#01" → 1
-            const id = parseInt(slotNumeroEl.textContent.replace("#", ""), 10);
-
-            if (!porId.has(id)) continue;
-
-            // A figurinha existe: insere a imagem
-            const figurinha = porId.get(id);
-
-            const img = document.createElement("img");
-            img.src = `${API_BASE_URL}${figurinha.imagem_url}`;
-            img.alt = figurinha.nome;
-            img.className = "sticker-img";
-
-            img.onload = () => slot.classList.add("slot-preenchido");
-            img.onerror = () => console.warn(`Imagem não encontrada: ${figurinha.nome}`);
-
-            slot.insertBefore(img, slot.firstChild);
+            if (figurinha.colada) {
+                pintarSlot(slot, figurinha);
+            } else {
+                limparSlot(slot);
+            }
         }
-
-        console.log(`✅ ${figurinhas.length} figurinhas carregadas da API!`);
 
     } catch (erro) {
         console.warn("⚠️  Não foi possível conectar à API do backend:", erro.message);
-        console.info("ℹ️  Inicie o servidor: cd backend/dia-3 && uvicorn main:app --reload");
+        console.info("ℹ️  Inicie o servidor: cd backend && uvicorn main:app --reload");
+    }
+
+    atualizarContador();
+}
+
+// Cola ou descola uma figurinha. As duas ações são a mesma requisição
+// com um verbo diferente na URL, então uma função só dá conta
+async function alternarFigurinha(id, acao) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/figurinhas/${id}/${acao}`, {
+            method: "POST",
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+        }
+
+        // O backend devolve a figurinha já atualizada, então o slot é
+        // redesenhado a partir da verdade do servidor — e não de um
+        // palpite do frontend sobre o que deveria ter acontecido
+        const figurinha = await response.json();
+        const slot = slotDe(id);
+
+        if (figurinha.colada) {
+            pintarSlot(slot, figurinha);
+        } else {
+            limparSlot(slot);
+        }
+
+        atualizarContador();
+
+    } catch (erro) {
+        console.warn(`⚠️  Não foi possível ${acao} a figurinha ${id}:`, erro.message);
     }
 }
 
@@ -83,34 +159,50 @@ document.addEventListener("DOMContentLoaded", () => {
     let isMuted = false;
     let pageFlip = null;
 
-    // 0. Tema: aplica a facção salva antes de montar o livro
-    function aplicarTema(tema) {
-        document.documentElement.dataset.theme = tema;
+    // 0. Modo: aplica o modo salvo antes de montar o livro
+    function aplicarModo(modo) {
+        document.documentElement.dataset.mode = modo;
 
-        // O ícone mostrado é o da facção ATIVA
-        iconAutobot.classList.toggle("hidden", tema === "decepticon");
-        iconDecepticon.classList.toggle("hidden", tema !== "decepticon");
+        // O ícone mostrado é o do modo ATIVO
+        iconAutobot.classList.toggle("hidden", modo === "decepticon");
+        iconDecepticon.classList.toggle("hidden", modo !== "decepticon");
 
         try {
-            localStorage.setItem(TEMA_KEY, tema);
+            localStorage.setItem(MODO_KEY, modo);
         } catch (e) {
-            console.warn("Não foi possível salvar a facção escolhida:", e.message);
+            console.warn("Não foi possível salvar o modo escolhido:", e.message);
         }
     }
 
-    function lerTemaSalvo() {
+    function lerModoSalvo() {
         try {
-            return localStorage.getItem(TEMA_KEY) || TEMA_PADRAO;
+            return localStorage.getItem(MODO_KEY) || MODO_PADRAO;
         } catch (e) {
-            return TEMA_PADRAO;
+            return MODO_PADRAO;
         }
     }
 
-    aplicarTema(lerTemaSalvo());
+    aplicarModo(lerModoSalvo());
 
     themeToggle.addEventListener("click", () => {
-        const atual = document.documentElement.dataset.theme;
-        aplicarTema(atual === "decepticon" ? "autobot" : "decepticon");
+        const atual = document.documentElement.dataset.mode;
+        aplicarModo(atual === "decepticon" ? "autobot" : "decepticon");
+    });
+
+    // 0.1 Colar / descolar figurinha.
+    // Um listener só no documento, em vez de 60 (dois botões por slot).
+    // Fica no document porque a lib PageFlip realoca as .page no DOM
+    document.addEventListener("click", (e) => {
+        const botaoColar = e.target.closest(".slot-number");
+        if (botaoColar) {
+            alternarFigurinha(botaoColar.closest(".sticker-slot").dataset.id, "colar");
+            return;
+        }
+
+        const botaoDescolar = e.target.closest(".slot-remove");
+        if (botaoDescolar) {
+            alternarFigurinha(botaoDescolar.closest(".sticker-slot").dataset.id, "descolar");
+        }
     });
 
     // 1. Initialize St.PageFlip
@@ -246,9 +338,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Show book after successful initialization
         bookElement.style.display = "block";
 
-        // Dia 3: Busca as figurinhas da API e preenche o álbum
+        // Busca o estado do álbum na API e preenche os slots já colados.
         // A função é async, chamamos sem await para não bloquear a inicialização do álbum
-        preencherFigurinhas();
+        carregarAlbum();
 
     } catch (error) {
         console.error("Erro ao inicializar a biblioteca PageFlip:", error);

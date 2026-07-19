@@ -34,11 +34,14 @@
 }
 
 /* ===================================================
-   CAMADA 2: TOKENS SEMÂNTICOS — TEMA AUTOBOT (padrão)
-   É isto que as regras CSS consomem. Trocar de facção
-   = trocar os valores destes tokens, nada mais.
+   CAMADA 2 — EIXO 1: FACÇÃO (matiz)
+   Define QUAL COR a página usa. Cada página do álbum
+   declara sua facção no HTML (data-faction), então
+   páginas ímpares e pares podem ter matizes diferentes
+   ao mesmo tempo, dentro do mesmo modo.
    =================================================== */
-:root {
+:root,
+[data-faction="autobot"] {
   --theme-primary: var(--color-tech-blue);
   --theme-primary-bright: var(--color-dev-blue);
   --theme-primary-deep: var(--color-deep-blue);
@@ -56,43 +59,11 @@
   --rgb-primary-darkest: 1 12 83;
   --rgb-glow: 0 240 255;
 
-  /* Páginas internas */
-  --page-bg: var(--color-white-snow);
-  --page-text: var(--color-new-black);
-  --page-text-muted: #626C84;
-  --page-text-faint: #8C98B0;
-  --page-crease: 0 0 0;      /* sombra da lombada: preta sobre papel claro */
-  --page-crease-max: 0.16;
-  --page-rule: rgb(0 0 0 / 0.05);
-
-  /* Capa */
-  --cover-bg: #070709;
-  --cover-bg-inner: #0e1220;
-  --cover-bg-outer: #060608;
-  --cover-card-bg: rgb(7 8 14 / 0.85);
   --glitch-shadow-1: #ff0055;
-
-  /* Código de barras da contracapa */
-  --barcode-bg: #FFFFFF;
-  --barcode-ink: #000000;
-
-  /* Degradê diagonal -45°: primária no canto superior
-     esquerdo → acento no inferior direito */
-  --gradient-main: linear-gradient(
-    -45deg,
-    var(--theme-accent-darkest) 0%,
-    var(--theme-accent) 30%,
-    var(--theme-primary) 65%,
-    var(--theme-primary-darkest) 100%
-  );
+  --cover-bg-inner: #0e1220;
 }
 
-/* ===================================================
-   TEMA DECEPTICON
-   Roxo no lugar do azul, prata no lugar do vermelho,
-   páginas pretas no lugar das brancas.
-   =================================================== */
-[data-theme="decepticon"] {
+[data-faction="decepticon"] {
   --theme-primary: var(--color-tech-purple);
   --theme-primary-bright: var(--color-dev-purple);
   --theme-primary-deep: var(--color-deep-purple);
@@ -108,6 +79,35 @@
   --rgb-primary-darkest: 26 4 48;
   --rgb-glow: 181 123 255;
 
+  --glitch-shadow-1: var(--color-dev-silver);
+  --cover-bg-inner: #180b28;
+}
+
+/* ===================================================
+   CAMADA 2 — EIXO 2: MODO (claro/escuro)
+   Define O QUÃO CLARO o papel é. Global, vem do botão
+   e do localStorage (data-mode no <html>).
+   Independente da facção: uma página Autobot em modo
+   escuro fica azul sobre preto, e não roxa.
+   =================================================== */
+:root {
+  --page-bg: var(--color-white-snow);
+  --page-text: var(--color-new-black);
+  --page-text-muted: #626C84;
+  --page-text-faint: #8C98B0;
+  --page-crease: 0 0 0;      /* sombra da lombada: preta sobre papel claro */
+  --page-crease-max: 0.16;
+  --page-rule: rgb(0 0 0 / 0.05);
+
+  --cover-bg: #070709;
+  --cover-bg-outer: #060608;
+  --cover-card-bg: rgb(7 8 14 / 0.85);
+
+  --barcode-bg: #FFFFFF;
+  --barcode-ink: #000000;
+}
+
+[data-mode="decepticon"] {
   --page-bg: #12121A;
   --page-text: var(--color-white-snow);
   --page-text-muted: #9AA0AD;
@@ -117,13 +117,20 @@
   --page-rule: rgb(255 255 255 / 0.08);
 
   --cover-bg: #08060C;
-  --cover-bg-inner: #180b28;
   --cover-bg-outer: #050408;
   --cover-card-bg: rgb(12 7 20 / 0.85);
-  --glitch-shadow-1: var(--color-dev-silver);
 
   --barcode-bg: #0A0A0F;
   --barcode-ink: var(--color-dev-silver);
+}
+
+/* Fundo da tela: segue a facção do MODO ativo, já que
+   não pertence a nenhuma página específica */
+[data-mode="decepticon"] body {
+  --theme-primary: var(--color-tech-purple);
+  --theme-primary-darkest: var(--color-purple-void);
+  --theme-accent: var(--color-tech-steel);
+  --theme-accent-darkest: var(--color-gunmetal);
 }
 
 * {
@@ -133,6 +140,20 @@
 }
 
 body {
+  /* Degradê diagonal -45°: acento no canto inferior direito →
+     primária no superior esquerdo.
+     O gradiente é declarado AQUI, e não no :root, de propósito:
+     os var() de dentro de uma custom property são resolvidos no
+     elemento que a DECLARA, não no que a usa. Declarado no :root,
+     ele congelaria as cores Autobot e ignoraria a regra acima */
+  --gradient-main: linear-gradient(
+    -45deg,
+    var(--theme-accent-darkest) 0%,
+    var(--theme-accent) 30%,
+    var(--theme-primary) 65%,
+    var(--theme-primary-darkest) 100%
+  );
+
   background-color: var(--color-new-black);
   background-image: var(--gradient-main);
   color: var(--page-text);
@@ -193,6 +214,37 @@ body {
 
 .hidden {
   display: none !important;
+}
+
+/* Contador de figurinhas coladas.
+   Fica absoluto e não no fluxo: o body é flex centralizado com o álbum
+   ocupando 800px de altura, então empurrar conteúdo acima dele estouraria
+   a viewport em telas menores */
+.album-counter {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-white-snow);
+  background: rgb(var(--rgb-primary-darkest) / 0.55);
+  border: 1px solid rgb(var(--rgb-primary-bright) / 0.4);
+  border-radius: 40px;
+  padding: 9px 22px;
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(4px);
+  user-select: none;
+}
+
+.album-counter strong {
+  font-weight: 800;
+  color: var(--theme-glow);
+  margin-left: 4px;
 }
 
 /* Navigation UI */
@@ -337,11 +389,11 @@ body.dragging * {
   letter-spacing: 1.5px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
-.badge-ia { background-color: var(--theme-primary); }
-.badge-python { background-color: var(--theme-primary-bright); }
-.badge-db { background-color: var(--theme-primary-deep); }
-.badge-os { background-color: var(--theme-accent); }
-.badge-brasil { background-color: var(--theme-primary-bright); }
+/* A cor do badge vem da facção da página, então uma classe basta —
+   não há mais um modificador por categoria */
+.tech-badge {
+  background-color: var(--theme-primary);
+}
 
 .page-title {
   font-family: 'Outfit', sans-serif;
@@ -390,12 +442,18 @@ body.dragging * {
   background-color: rgb(var(--rgb-primary-bright) / 0.08);
 }
 
+/* O número é um <button>: clicar nele cola a figurinha.
+   Por ser button, o handler de arraste das páginas já o ignora
+   (ver o closest("button") em app.js), então o clique não vira
+   virada de página. O reset abaixo desfaz o visual padrão do
+   botão e mantém o círculo original */
 .slot-number {
   font-family: 'Outfit', sans-serif;
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--theme-primary-bright);
   background: rgb(var(--rgb-primary-bright) / 0.12);
+  border: 2px solid transparent;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -403,7 +461,59 @@ body.dragging * {
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
+  padding: 0;
+  cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.slot-number:hover {
+  border-color: var(--theme-glow);
+  transform: scale(1.08);
+}
+
+.slot-number:active {
+  transform: scale(0.94);
+}
+
+/* Botão de descolar: só aparece quando o slot tem imagem */
+.slot-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease, background 0.25s ease, transform 0.2s ease;
+}
+
+/* Some por padrão e reaparece no hover do slot, para não poluir a arte.
+   Em telas de toque não há hover, então o :focus-visible garante acesso
+   pelo teclado e o slot-preenchido mantém uma opacidade mínima */
+.slot-preenchido .slot-remove {
+  opacity: 0.55;
+}
+
+.slot-preenchido:hover .slot-remove,
+.slot-remove:focus-visible {
+  opacity: 1;
+}
+
+.slot-remove:hover {
+  background: var(--theme-accent);
+  transform: scale(1.12);
 }
 
 .sticker-slot:hover .slot-number {
@@ -620,14 +730,18 @@ body.dragging * {
   100% { clip: rect(52px, 9999px, 110px, 0); }
 }
 
+/* "TRANSFORMERS" tem 12 caracteres — o tamanho é calculado para
+   caber na largura da página, não herdado do título curto anterior.
+   O clamp() acompanha a página, que é elástica (size: "stretch") */
 .cover-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 4rem;
+  font-size: clamp(1.5rem, 7.2vw, 2.7rem);
   font-weight: 800;
-  letter-spacing: 6px;
+  letter-spacing: 2px;
   color: var(--color-white-snow);
   margin: 0;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .cover-subtitle {
@@ -710,21 +824,21 @@ body.dragging * {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.mc-turing {
+.mc-optimus {
   top: 25px;
   left: 25px;
   transform: rotate(-12deg);
   animation: floatCard1 6s infinite ease-in-out;
 }
 
-.mc-guido {
+.mc-megatron {
   bottom: 25px;
   left: 20px;
   transform: rotate(8deg);
   animation: floatCard2 7s infinite ease-in-out;
 }
 
-.mc-jobs {
+.mc-primal {
   top: 85px;
   right: 20px;
   transform: rotate(15deg);
@@ -770,12 +884,13 @@ body.dragging * {
   animation: spherePulse 4s infinite ease-in-out;
 }
 
+/* Símbolo da facção no núcleo da esfera. Os paths são preenchidos
+   (silhueta cheia), então nada de stroke aqui */
 .art-logo {
-  width: 32px;
-  height: 32px;
-  stroke: var(--color-white-snow);
-  stroke-width: 2;
-  fill: none;
+  width: 34px;
+  height: 34px;
+  fill: var(--color-white-snow);
+  stroke: none;
 }
 
 .sphere-ring {
@@ -1009,9 +1124,7 @@ body.dragging * {
     height: 38px;
     font-size: 1.4rem;
   }
-  .cover-title {
-    font-size: 3rem;
-  }
+  /* .cover-title não entra aqui: o clamp() dele já escala sozinho */
   .cover-subtitle {
     font-size: 1.4rem;
   }
@@ -1035,15 +1148,15 @@ body.dragging * {
   .mc-num {
     font-size: 0.5rem;
   }
-  .mc-turing {
+  .mc-optimus {
     top: 15px;
     left: 15px;
   }
-  .mc-guido {
+  .mc-megatron {
     bottom: 15px;
     left: 10px;
   }
-  .mc-jobs {
+  .mc-primal {
     top: 55px;
     right: 10px;
   }
@@ -1097,9 +1210,7 @@ body.dragging * {
   .cover-content {
     padding: 30px 15px;
   }
-  .cover-title {
-    font-size: 2.5rem;
-  }
+  /* idem: o clamp() de .cover-title cuida das telas pequenas */
   .cover-art {
     width: 130px;
     height: 180px;
@@ -1126,5 +1237,27 @@ body.dragging * {
     right: 10px;
     width: 40px;
     height: 40px;
+  }
+  .theme-btn {
+    top: 10px;
+    right: 58px;
+    width: 40px;
+    height: 40px;
+  }
+  /* No mobile o contador não cabe ao lado dos botões: vai para o rodapé */
+  .album-counter {
+    top: auto;
+    bottom: 10px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 7px 16px;
+  }
+  .slot-remove {
+    width: 28px;
+    height: 28px;
+    opacity: 1;
+  }
+  .slot-preenchido .slot-remove {
+    opacity: 0.9;
   }
 }

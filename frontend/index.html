@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alura Album - Copa do Mundo Tech</title>
+    <title>Transformers Album - Três Eras, Duas Facções</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,19 +13,22 @@
         rel="stylesheet">
     <!-- Style -->
     <link rel="stylesheet" href="style.css">
-    <!-- Aplica a facção salva antes do primeiro paint, para não piscar o tema claro -->
+    <!-- Aplica o modo salvo antes do primeiro paint, para não piscar o tema claro -->
     <script>
         try {
-            var temaSalvo = localStorage.getItem("alura-album-tema");
-            if (temaSalvo) document.documentElement.dataset.theme = temaSalvo;
-        } catch (e) { /* localStorage bloqueado: segue no tema padrão */ }
+            var modoSalvo = localStorage.getItem("alura-album-modo");
+            if (modoSalvo) document.documentElement.dataset.mode = modoSalvo;
+        } catch (e) { /* localStorage bloqueado: segue no modo padrão */ }
     </script>
 </head>
 
 <body>
 
-    <!-- Faction Toggle (Autobot / Decepticon) -->
-    <button id="theme-toggle" class="theme-btn" aria-label="Alternar facção">
+    <!-- Contador de figurinhas coladas (alimentado por GET /figurinhas/total) -->
+    <div class="album-counter">Figurinhas: <strong id="contador-valor">--/30</strong></div>
+
+    <!-- Faction Toggle (Autobot = claro / Decepticon = escuro) -->
+    <button id="theme-toggle" class="theme-btn" aria-label="Alternar modo Autobot/Decepticon">
         <svg class="faction-icon-autobot" viewBox="0 0 192.756 192.756" width="26" height="26"
             fill="currentColor" fill-rule="evenodd" clip-rule="evenodd">
             <path
@@ -74,44 +77,52 @@
     <div class="album-viewport" id="album-viewport">
         <div class="flip-book" id="book">
 
-            <!-- PAGINA 0: CAPA -->
+            <!-- PAGINA 0: CAPA (sem data-faction: segue a facção do modo ativo) -->
             <div class="page page-cover" data-density="hard">
                 <div class="page-content cover-content">
                     <div class="cover-header">
-                        <span class="cover-seal">COLEÇÃO OFICIAL</span>
+                        <span class="cover-seal">ARQUIVO CYBERTRONIANO</span>
                     </div>
                     <div class="cover-body">
-                        <h1 class="cover-title glitch" data-text="ALURA">ALURA</h1>
+                        <h1 class="cover-title glitch" data-text="TRANSFORMERS">TRANSFORMERS</h1>
                         <h2 class="cover-subtitle glitch" data-text="ALBUM">ALBUM</h2>
                         <div class="cover-art">
                             <div class="art-grid"></div>
 
                             <!-- Floating Mini Cards Silhouette Collage -->
-                            <div class="mini-card mc-turing">
-                                <div class="mc-avatar">AI</div>
+                            <div class="mini-card mc-optimus">
+                                <div class="mc-avatar">OP</div>
                                 <span class="mc-num">#01</span>
                             </div>
-                            <div class="mini-card mc-guido">
-                                <div class="mc-avatar">PY</div>
+                            <div class="mini-card mc-megatron">
+                                <div class="mc-avatar">MEG</div>
                                 <span class="mc-num">#06</span>
                             </div>
-                            <div class="mini-card mc-jobs">
-                                <div class="mc-avatar">OS</div>
-                                <span class="mc-num">#20</span>
+                            <div class="mini-card mc-primal">
+                                <div class="mc-avatar">PRL</div>
+                                <span class="mc-num">#11</span>
                             </div>
 
                             <!-- Central Glowing 3D Tech Sphere -->
                             <div class="tech-sphere">
                                 <div class="sphere-core">
-                                    <svg class="art-logo" viewBox="0 0 24 24">
-                                        <path d="M12 2L2 22h20L12 2zm0 4l6.5 13h-13L12 6z" />
+                                    <svg class="art-logo" viewBox="0 0 192.756 192.756" fill-rule="evenodd"
+                                        clip-rule="evenodd">
+                                        <path
+                                            d="M74.63 56.749L42.399 40.096 38.233 19.28H17.646l9.607 54.879 21.393 14.808H80.64l-6.01-32.218zm-6.484 3.122l.284 5.724-36.112-16.274-.473-5.866 36.301 16.416zm3.597 15.848v5.44L34.59 64.649l-.568-4.778 37.721 15.848z" />
+                                        <path
+                                            d="M144.914 36.926l2.887-13.483C112.588 11 78.085 10.527 44.245 22.118l2.319 13.814 47.613 24.175 50.737-23.181zm-49.412 7.049L75.198 29.924h40.845L95.502 43.975z" />
+                                        <path
+                                            d="M175.109 21.077h-21.061l-4.971 20.012-33.84 16.416-5.963 31.981h34.359l21.062-13.247 10.414-55.162zm-15.38 26.256v5.488l-36.396 14.288v-5.44l36.396-14.336zm-3.883 15.66v4.92L118.6 83.242V77.28l37.246-14.287zM41.879 102.26L40.27 89.534l-11.928-7.57 4.639 73.093 28.397 14.807.285-55.115-19.784-12.489zM67.342 171.71l5.49 3.879 7.289-24.175h28.35l7.525 23.892 6.248-3.36v-57.197l-12.732-11.732v39.266H80.641l-.52-39.266-12.779 11.732v56.961z" />
+                                        <path
+                                            d="M81.682 60.627l4.402 26.777v49.959h17.465V86.884l4.922-26.257-14.294 6.009-12.495-6.009zM83.765 156.618l-5.727 22.377h32.798l-6.529-22.377H83.765zM162.852 83.525l-13.538 9.368-.519 9.887-21.061 12.727v55.398l29.438-12.963 5.68-74.417z" />
                                     </svg>
                                 </div>
                                 <div class="sphere-ring ring-1"></div>
                                 <div class="sphere-ring ring-2"></div>
                             </div>
                         </div>
-                        <p class="cover-footer-text">A SELEÇÃO DE GIGANTES DA TECNOLOGIA</p>
+                        <p class="cover-footer-text">TRÊS ERAS · DUAS FACÇÕES · TRINTA GUERREIROS</p>
                     </div>
                     <div class="cover-footer">
                         <span>2026 IMERSÃO JULHO</span>
@@ -119,228 +130,258 @@
                 </div>
             </div>
 
-            <!-- PAGINA 1: IA -->
-            <div class="page page-left">
+            <!-- PAGINA 1: G1 AUTOBOTS -->
+            <div class="page page-left" data-faction="autobot">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-ia">IA</span>
-                        <h3 class="page-title">Pioneiros da Inteligência Artificial</h3>
+                        <span class="tech-badge">G1 · AUTOBOTS</span>
+                        <h3 class="page-title">A Resistência de Cybertron</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#01</div>
-                            <div class="slot-name">Alan Turing</div>
-                            <div class="slot-role">Fundamentos da computação e do conceito de IA</div>
+                        <div class="sticker-slot" data-id="1">
+                            <button class="slot-number" aria-label="Colar figurinha 01">#01</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 01">&times;</button>
+                            <div class="slot-name">Optimus Prime</div>
+                            <div class="slot-role">Líder dos Autobots</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#02</div>
-                            <div class="slot-name">John McCarthy</div>
-                            <div class="slot-role">Criou o termo "Artificial Intelligence"</div>
+                        <div class="sticker-slot" data-id="2">
+                            <button class="slot-number" aria-label="Colar figurinha 02">#02</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 02">&times;</button>
+                            <div class="slot-name">Bumblebee</div>
+                            <div class="slot-role">Espião e batedor</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#03</div>
-                            <div class="slot-name">Sam Altman</div>
-                            <div class="slot-role">Co-fundador e CEO da OpenAI</div>
+                        <div class="sticker-slot special-slot" data-id="3">
+                            <button class="slot-number" aria-label="Colar figurinha 03">#03</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 03">&times;</button>
+                            <div class="slot-name">Jazz</div>
+                            <div class="slot-role">Chefe de operações especiais</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#04</div>
-                            <div class="slot-name">Geoffrey Hinton</div>
-                            <div class="slot-role">Deep learning e redes neurais modernas</div>
+                        <div class="sticker-slot" data-id="4">
+                            <button class="slot-number" aria-label="Colar figurinha 04">#04</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 04">&times;</button>
+                            <div class="slot-name">Ironhide</div>
+                            <div class="slot-role">Segurança e armamentos</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#05</div>
-                            <div class="slot-name">Yann LeCun</div>
-                            <div class="slot-role">Redes convolucionais e visão computacional</div>
+                        <div class="sticker-slot" data-id="5">
+                            <button class="slot-number" aria-label="Colar figurinha 05">#05</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 05">&times;</button>
+                            <div class="slot-name">Grimlock</div>
+                            <div class="slot-role">Comandante dos Dinobots</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 1</div>
                 </div>
             </div>
 
-            <!-- PAGINA 2: PYTHON -->
-            <div class="page page-right">
+            <!-- PAGINA 2: G1 DECEPTICONS -->
+            <div class="page page-right" data-faction="decepticon">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-python">PYTHON</span>
-                        <h3 class="page-title">Arquitetos da Simplicidade</h3>
+                        <span class="tech-badge">G1 · DECEPTICONS</span>
+                        <h3 class="page-title">O Império de Megatron</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#06</div>
-                            <div class="slot-name">Guido van Rossum</div>
-                            <div class="slot-role">Criador da linguagem Python</div>
+                        <div class="sticker-slot" data-id="6">
+                            <button class="slot-number" aria-label="Colar figurinha 06">#06</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 06">&times;</button>
+                            <div class="slot-name">Megatron</div>
+                            <div class="slot-role">Líder dos Decepticons</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#07</div>
-                            <div class="slot-name">Tim Peters</div>
-                            <div class="slot-role">Autor do "Zen of Python"</div>
+                        <div class="sticker-slot" data-id="7">
+                            <button class="slot-number" aria-label="Colar figurinha 07">#07</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 07">&times;</button>
+                            <div class="slot-name">Starscream</div>
+                            <div class="slot-role">Segundo em comando traiçoeiro</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#08</div>
-                            <div class="slot-name">Raymond Hettinger</div>
-                            <div class="slot-role">Um dos maiores educadores de Python</div>
+                        <div class="sticker-slot special-slot" data-id="8">
+                            <button class="slot-number" aria-label="Colar figurinha 08">#08</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 08">&times;</button>
+                            <div class="slot-name">Soundwave</div>
+                            <div class="slot-role">Comunicações e espionagem</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#09</div>
-                            <div class="slot-name">Travis Oliphant</div>
-                            <div class="slot-role">Criador do NumPy</div>
+                        <div class="sticker-slot" data-id="9">
+                            <button class="slot-number" aria-label="Colar figurinha 09">#09</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 09">&times;</button>
+                            <div class="slot-name">Shockwave</div>
+                            <div class="slot-role">Lógica implacável</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#10</div>
-                            <div class="slot-name">Wes McKinney</div>
-                            <div class="slot-role">Criador do pandas</div>
+                        <div class="sticker-slot" data-id="10">
+                            <button class="slot-number" aria-label="Colar figurinha 10">#10</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 10">&times;</button>
+                            <div class="slot-name">Devastator</div>
+                            <div class="slot-role">Combinação dos Constructicons</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 2</div>
                 </div>
             </div>
 
-            <!-- PAGINA 3: BANCO DE DADOS -->
-            <div class="page page-left">
+            <!-- PAGINA 3: BEAST WARS MAXIMALS -->
+            <div class="page page-left" data-faction="autobot">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-db">BANCO DE DADOS</span>
-                        <h3 class="page-title">Arquitetos de Bancos de Dados</h3>
+                        <span class="tech-badge">BEAST WARS · MAXIMALS</span>
+                        <h3 class="page-title">Herdeiros dos Autobots</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#11</div>
-                            <div class="slot-name">Edgar F. Codd</div>
-                            <div class="slot-role">Inventor do modelo relacional</div>
+                        <div class="sticker-slot" data-id="11">
+                            <button class="slot-number" aria-label="Colar figurinha 11">#11</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 11">&times;</button>
+                            <div class="slot-name">Optimus Primal</div>
+                            <div class="slot-role">Líder dos Maximals</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#12</div>
-                            <div class="slot-name">Larry Ellison</div>
-                            <div class="slot-role">Fundador da Oracle Corporation</div>
+                        <div class="sticker-slot" data-id="12">
+                            <button class="slot-number" aria-label="Colar figurinha 12">#12</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 12">&times;</button>
+                            <div class="slot-name">Cheetor</div>
+                            <div class="slot-role">Batedor mais veloz</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#13</div>
-                            <div class="slot-name">Michael Widenius</div>
-                            <div class="slot-role">Criador do MySQL</div>
+                        <div class="sticker-slot special-slot" data-id="13">
+                            <button class="slot-number" aria-label="Colar figurinha 13">#13</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 13">&times;</button>
+                            <div class="slot-name">Rattrap</div>
+                            <div class="slot-role">Espião e demolições</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#14</div>
-                            <div class="slot-name">Salvatore Sanfilippo</div>
-                            <div class="slot-role">Criador do Redis</div>
+                        <div class="sticker-slot" data-id="14">
+                            <button class="slot-number" aria-label="Colar figurinha 14">#14</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 14">&times;</button>
+                            <div class="slot-name">Rhinox</div>
+                            <div class="slot-role">Engenheiro-chefe</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#15</div>
-                            <div class="slot-name">Eliot Horowitz</div>
-                            <div class="slot-role">Cocriador do MongoDB</div>
+                        <div class="sticker-slot" data-id="15">
+                            <button class="slot-number" aria-label="Colar figurinha 15">#15</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 15">&times;</button>
+                            <div class="slot-name">Dinobot</div>
+                            <div class="slot-role">Guerreiro de honra</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 3</div>
                 </div>
             </div>
 
-            <!-- PAGINA 4: SISTEMAS OPERACIONAIS -->
-            <div class="page page-right">
+            <!-- PAGINA 4: BEAST WARS PREDACONS -->
+            <div class="page page-right" data-faction="decepticon">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-os">SISTEMAS OPERACIONAIS</span>
-                        <h3 class="page-title">Arquitetos da Computação Moderna</h3>
+                        <span class="tech-badge">BEAST WARS · PREDACONS</span>
+                        <h3 class="page-title">A Linhagem Predacon</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#16</div>
-                            <div class="slot-name">Linus Torvalds</div>
-                            <div class="slot-role">Criador do Linux & Git</div>
+                        <div class="sticker-slot" data-id="16">
+                            <button class="slot-number" aria-label="Colar figurinha 16">#16</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 16">&times;</button>
+                            <div class="slot-name">Megatron</div>
+                            <div class="slot-role">Líder dos Predacons</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#17</div>
-                            <div class="slot-name">Dennis Ritchie</div>
-                            <div class="slot-role">Co-criador do Unix & C</div>
+                        <div class="sticker-slot" data-id="17">
+                            <button class="slot-number" aria-label="Colar figurinha 17">#17</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 17">&times;</button>
+                            <div class="slot-name">Waspinator</div>
+                            <div class="slot-role">Soldado eternamente destruído</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#18</div>
-                            <div class="slot-name">Richard Stallman</div>
-                            <div class="slot-role">Projeto GNU / Free Software</div>
+                        <div class="sticker-slot special-slot" data-id="18">
+                            <button class="slot-number" aria-label="Colar figurinha 18">#18</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 18">&times;</button>
+                            <div class="slot-name">Tarantulas</div>
+                            <div class="slot-role">Cientista conspirador</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#19</div>
-                            <div class="slot-name">Bill Gates</div>
-                            <div class="slot-role">Co-fundador da Microsoft</div>
+                        <div class="sticker-slot" data-id="19">
+                            <button class="slot-number" aria-label="Colar figurinha 19">#19</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 19">&times;</button>
+                            <div class="slot-name">Blackarachnia</div>
+                            <div class="slot-role">Espiã de lealdade dividida</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#20</div>
-                            <div class="slot-name">Steve Jobs</div>
-                            <div class="slot-role">Co-fundador da Apple</div>
+                        <div class="sticker-slot" data-id="20">
+                            <button class="slot-number" aria-label="Colar figurinha 20">#20</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 20">&times;</button>
+                            <div class="slot-name">Inferno</div>
+                            <div class="slot-role">Soldado fanático</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 4</div>
                 </div>
             </div>
 
-            <!-- PAGINA 5: BRASIL - PARTE 1 -->
-            <div class="page page-left">
+            <!-- PAGINA 5: RID 2000 AUTOBOTS -->
+            <div class="page page-left" data-faction="autobot">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-brasil">BRASIL</span>
-                        <h3 class="page-title">Celebridades Tech - Vol. 1</h3>
+                        <span class="tech-badge">RID 2000 · AUTOBOTS</span>
+                        <h3 class="page-title">Os Irmãos Autobot</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#21</div>
-                            <div class="slot-name">Paulo Silveira</div>
-                            <div class="slot-role">Co-fundador da Alura</div>
+                        <div class="sticker-slot" data-id="21">
+                            <button class="slot-number" aria-label="Colar figurinha 21">#21</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 21">&times;</button>
+                            <div class="slot-name">Optimus Prime</div>
+                            <div class="slot-role">Líder dos Autobots</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#22</div>
-                            <div class="slot-name">Guilherme Silveira</div>
-                            <div class="slot-role">Co-fundador da Alura</div>
+                        <div class="sticker-slot" data-id="22">
+                            <button class="slot-number" aria-label="Colar figurinha 22">#22</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 22">&times;</button>
+                            <div class="slot-name">Side Burn</div>
+                            <div class="slot-role">Irmão Autobot veloz</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#23</div>
-                            <div class="slot-name">Gustavo Guanabara</div>
-                            <div class="slot-role">Criador do Curso em Vídeo</div>
+                        <div class="sticker-slot special-slot" data-id="23">
+                            <button class="slot-number" aria-label="Colar figurinha 23">#23</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 23">&times;</button>
+                            <div class="slot-name">Prowl</div>
+                            <div class="slot-role">Irmão Autobot estrategista</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#24</div>
-                            <div class="slot-name">Maurício Aniche</div>
-                            <div class="slot-role">Engenharia de Software / Educador</div>
+                        <div class="sticker-slot" data-id="24">
+                            <button class="slot-number" aria-label="Colar figurinha 24">#24</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 24">&times;</button>
+                            <div class="slot-name">X-Brawn</div>
+                            <div class="slot-role">Irmão Autobot mais forte</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#25</div>
-                            <div class="slot-name">Andre David</div>
-                            <div class="slot-role">Coordenador da FIAP</div>
+                        <div class="sticker-slot" data-id="25">
+                            <button class="slot-number" aria-label="Colar figurinha 25">#25</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 25">&times;</button>
+                            <div class="slot-name">Ultra Magnus</div>
+                            <div class="slot-role">Irmão rival de Optimus</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 5</div>
                 </div>
             </div>
 
-            <!-- PAGINA 6: BRASIL - PARTE 2 -->
-            <div class="page page-right">
+            <!-- PAGINA 6: RID 2000 PREDACONS -->
+            <div class="page page-right" data-faction="decepticon">
                 <div class="page-content">
                     <div class="page-header">
-                        <span class="tech-badge badge-brasil">BRASIL</span>
-                        <h3 class="page-title">Celebridades Tech - Vol. 2</h3>
+                        <span class="tech-badge">RID 2000 · PREDACONS</span>
+                        <h3 class="page-title">A Horda de Megatron</h3>
                     </div>
                     <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#26</div>
-                            <div class="slot-name">Guilherme Lima</div>
-                            <div class="slot-role">Alura / Tech Educator</div>
+                        <div class="sticker-slot" data-id="26">
+                            <button class="slot-number" aria-label="Colar figurinha 26">#26</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 26">&times;</button>
+                            <div class="slot-name">Megatron</div>
+                            <div class="slot-role">Líder dos Predacons</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#27</div>
-                            <div class="slot-name">Gi Space Coding</div>
-                            <div class="slot-role">Giovanna Souza / Creator</div>
+                        <div class="sticker-slot" data-id="27">
+                            <button class="slot-number" aria-label="Colar figurinha 27">#27</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 27">&times;</button>
+                            <div class="slot-name">Sky-Byte</div>
+                            <div class="slot-role">Tubarão poeta e general</div>
                         </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#28</div>
-                            <div class="slot-name">Vinicius Neves</div>
-                            <div class="slot-role">Desenvolvedor FullStack</div>
+                        <div class="sticker-slot special-slot" data-id="28">
+                            <button class="slot-number" aria-label="Colar figurinha 28">#28</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 28">&times;</button>
+                            <div class="slot-name">Slapper</div>
+                            <div class="slot-role">Sapo dos ataques químicos</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#29</div>
-                            <div class="slot-name">Rafaela Ballerini</div>
-                            <div class="slot-role">Alura / Tech Educator</div>
+                        <div class="sticker-slot" data-id="29">
+                            <button class="slot-number" aria-label="Colar figurinha 29">#29</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 29">&times;</button>
+                            <div class="slot-name">Gas Skunk</div>
+                            <div class="slot-role">Gambá dos gases tóxicos</div>
                         </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#30</div>
-                            <div class="slot-name">Você</div>
-                            <div class="slot-role">Coloque sua figurinha aqui!</div>
+                        <div class="sticker-slot" data-id="30">
+                            <button class="slot-number" aria-label="Colar figurinha 30">#30</button>
+                            <button class="slot-remove" aria-label="Descolar figurinha 30">&times;</button>
+                            <div class="slot-name">Dark Scream</div>
+                            <div class="slot-role">Esquilo voador furtivo</div>
                         </div>
                     </div>
                     <div class="page-footer">Pág. 6</div>
@@ -351,16 +392,16 @@
             <div class="page page-cover-back" data-density="hard">
                 <div class="page-content cover-back-content">
                     <div class="cover-back-header">
-                        <h2>ALURA ALBUM</h2>
+                        <h2>TRANSFORMERS ALBUM</h2>
                     </div>
                     <div class="cover-back-body">
                         <div class="tech-logo-collage">
-                            <span>IA</span> • <span>PYTHON</span> • <span>BANCO DE DADOS</span> • <span>SISTEMAS
-                                OPERACIONAIS</span> • <span>DEV'S DO BRASIL</span>
+                            <span>G1</span> • <span>BEAST WARS</span> • <span>ROBOTS IN DISGUISE</span>
                         </div>
                         <p class="summary-text">
-                            O Alura Album é um tributo interativo à história e evolução do desenvolvimento de software.
-                            Juntando as mentes mais brilhantes nacionais e internacionais que moldam o futuro tech.
+                            Um arquivo interativo das três eras que definiram a guerra por Cybertron.
+                            De Optimus Prime a Optimus Primal, de Megatron a Sky-Byte — trinta guerreiros
+                            divididos entre os que protegem e os que conquistam.
                         </p>
                         <div class="barcode-container">
                             <div class="barcode">
