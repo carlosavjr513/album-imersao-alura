@@ -38,6 +38,10 @@ PASTA_BASE = os.path.dirname(os.path.abspath(__file__))
 # independente do diretório de onde o uvicorn foi executado
 PASTA_IMAGENS = os.path.join(PASTA_BASE, "figurinhas")
 
+# Quantidade de slots do álbum. É uma constante porque o álbum tem tamanho
+# fixo: 30 slots, estejam eles preenchidos ou não
+TOTAL_ALBUM = 30
+
 # Lista de figurinhas do álbum — 30 no total, agrupadas por categoria.
 # Só ficam ativas as figurinhas cuja imagem já existe na pasta figurinhas/.
 # As demais estão comentadas: basta adicionar o arquivo (ex. 03-sam-altman.jpg)
@@ -96,6 +100,25 @@ def hello_world():
 def listar_figurinhas():
     # A lista de dicionários vira um array JSON na resposta
     return figurinhas
+
+
+# Rota com as estatísticas do álbum.
+# ATENÇÃO à ordem: esta rota precisa ser declarada ANTES de
+# /figurinhas/{figurinha_id}. O FastAPI testa as rotas na ordem em que foram
+# registradas, então a rota dinâmica capturaria "total" e tentaria convertê-lo
+# para int, respondendo 422 em vez de chegar aqui
+@app.get("/figurinhas/total")
+def estatisticas_album():
+    # len() conta quantas figurinhas estão na lista neste momento.
+    # Como o número é calculado, basta adicionar um item à lista para a
+    # estatística se atualizar sozinha — nada precisa ser ajustado aqui
+    coladas = len(figurinhas)
+
+    return {
+        "total_album": TOTAL_ALBUM,
+        "coladas": coladas,
+        "faltam": TOTAL_ALBUM - coladas,
+    }
 
 
 # O trecho entre chaves na rota é um parâmetro dinâmico: o valor da URL
