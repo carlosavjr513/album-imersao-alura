@@ -6,6 +6,15 @@
 const API_BASE_URL = "http://localhost:8000";
 
 // ===================================================
+// TEMA / FACÇÃO
+// O tema é trocado só pelo atributo data-theme no <html>.
+// O CSS resolve o resto via variáveis, então nada aqui
+// precisa conhecer cores nem re-inicializar o PageFlip.
+// ===================================================
+const TEMA_KEY = "alura-album-tema";
+const TEMA_PADRAO = "autobot";
+
+// ===================================================
 // FUNÇÃO: Preenche os slots do álbum com imagens da API
 // Esta função é chamada após o álbum ser inicializado.
 // ===================================================
@@ -67,8 +76,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconOn = soundToggle.querySelector(".sound-icon-on");
     const iconOff = soundToggle.querySelector(".sound-icon-off");
 
+    const themeToggle = document.getElementById("theme-toggle");
+    const iconAutobot = themeToggle.querySelector(".faction-icon-autobot");
+    const iconDecepticon = themeToggle.querySelector(".faction-icon-decepticon");
+
     let isMuted = false;
     let pageFlip = null;
+
+    // 0. Tema: aplica a facção salva antes de montar o livro
+    function aplicarTema(tema) {
+        document.documentElement.dataset.theme = tema;
+
+        // O ícone mostrado é o da facção ATIVA
+        iconAutobot.classList.toggle("hidden", tema === "decepticon");
+        iconDecepticon.classList.toggle("hidden", tema !== "decepticon");
+
+        try {
+            localStorage.setItem(TEMA_KEY, tema);
+        } catch (e) {
+            console.warn("Não foi possível salvar a facção escolhida:", e.message);
+        }
+    }
+
+    function lerTemaSalvo() {
+        try {
+            return localStorage.getItem(TEMA_KEY) || TEMA_PADRAO;
+        } catch (e) {
+            return TEMA_PADRAO;
+        }
+    }
+
+    aplicarTema(lerTemaSalvo());
+
+    themeToggle.addEventListener("click", () => {
+        const atual = document.documentElement.dataset.theme;
+        aplicarTema(atual === "decepticon" ? "autobot" : "decepticon");
+    });
 
     // 1. Initialize St.PageFlip
     try {

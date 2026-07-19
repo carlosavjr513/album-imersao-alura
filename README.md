@@ -2,6 +2,8 @@
 
 Álbum de figurinhas digital e interativo, feito durante a **Imersão Alura (Julho/2026)**. Reúne 30 nomes que marcaram a história da tecnologia — de Alan Turing aos criadores de conteúdo tech do Brasil — em um livro folheável no navegador, com animação de virada de página em 3D e som sintetizado de papel.
 
+A identidade visual é inspirada em Transformers: um botão alterna o álbum inteiro entre as facções **Autobot** (azul/vermelho, páginas brancas) e **Decepticon** (roxo/prata, páginas pretas).
+
 O último slot (`#30`) é reservado: é onde você cola a sua própria figurinha.
 
 ## Objetivo
@@ -31,20 +33,40 @@ Também carrega os controles de UI (botões de som e navegação) e, no fim do `
 
 ### `frontend/style.css`
 
-Folha de estilo única (~980 linhas), organizada em blocos comentados:
+Folha de estilo única, organizada em blocos comentados:
 
 | Bloco | O que faz |
 |---|---|
-| Sound & Navigation UI | Botões flutuantes de som e setas |
-| Album Layout / Pages | Container do livro, textura de papel, sombras da lombada |
+| Camada 1 — paletas cruas | Valores fixos de cor (azuis, vermelhos, roxos, prata). Nenhuma regra os consome direto |
+| Camada 2 — tokens semânticos | O que as regras realmente usam. Trocar de facção = trocar o valor destes tokens |
+| Sound & Navigation UI | Botões flutuantes de som, facção e setas |
+| Album Layout / Pages | Container do livro, fundo das páginas, sombras da lombada |
 | Stickers Grid & Slots | Grade das figurinhas e o estado vazio (tracejado) |
 | Slot preenchido | Ao carregar a imagem, esconde número/função, mostra a foto com o nome sobreposto e roda a animação de "colar" |
 | Capa / Contracapa | Efeito glitch no título, esfera com anéis orbitais, código de barras |
 | Responsiveness | Adapta o livro para telas menores |
 
+#### Sistema de temas
+
+O visual é controlado por duas camadas de variáveis CSS. As regras nunca escrevem uma cor literal — consomem tokens como `--theme-primary`, `--page-bg` ou `--theme-glow`. O tema Decepticon é só um bloco `[data-theme="decepticon"]` que redefine esses tokens.
+
+Cores com transparência usam triplets RGB (`rgb(var(--rgb-primary-bright) / 0.15)`) para que o alpha também acompanhe o tema.
+
+Dois detalhes que não são simples troca de cor:
+
+- **Sombra da lombada** — sobre página preta, uma sombra preta some. Os tokens `--page-crease` / `--page-crease-max` invertem a dobra para luz no tema escuro.
+- **Código de barras** — o retângulo branco fixo viraria um borrão na contracapa escura, então `--barcode-bg` / `--barcode-ink` se invertem.
+
 ### `frontend/app.js`
 
-Concentra toda a lógica. Quatro responsabilidades:
+Concentra toda a lógica. Cinco responsabilidades:
+
+**0. Troca de facção — `aplicarTema()`**
+
+Escreve `data-theme` no `<html>` e salva em `localStorage`. Não conhece nenhuma cor: o CSS resolve tudo pelas variáveis. Como custom properties são herdadas pela árvore inteira, as páginas continuam recebendo os tokens mesmo depois da lib PageFlip movê-las para a estrutura DOM dela — nenhum re-init é necessário.
+
+O acesso ao `localStorage` fica em `try/catch` (lança em modo privativo / `file://`). Um script inline no `<head>` do `index.html` reaplica a facção salva **antes do primeiro paint**, senão quem escolheu Decepticon vê o álbum branco piscar a cada reload.
+
 
 **1. Consumo da API — `preencherFigurinhas()`**
 
@@ -93,3 +115,15 @@ Sem backend rodando, o álbum abre com todos os slots vazios. Com a API disponí
 |---|---|
 | Virar página | Arrastar a página, setas laterais ou `←` / `→` |
 | Ligar/desligar som | Botão de alto-falante no canto |
+| Trocar de facção | Botão com o símbolo Autobot/Decepticon, à esquerda do som |
+
+## Temas
+
+| | Autobot (padrão) | Decepticon |
+|---|---|---|
+| Primária | azul | roxo |
+| Acento | vermelho | prata/cinza |
+| Páginas | branco | preto |
+| Glow da capa | ciano | violeta |
+
+A escolha persiste entre visitas. Os símbolos das facções são SVGs inline desenhados em versão geométrica simplificada — o projeto não usa nenhum asset externo nem a arte oficial da Hasbro.
