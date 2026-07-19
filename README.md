@@ -17,6 +17,10 @@ frontend/
 ├── index.html   # Estrutura do álbum: capa, 6 páginas, contracapa
 ├── style.css    # Todo o visual, animações e responsividade
 └── app.js       # Interação (folhear, som, teclado) + consumo da API
+
+backend/
+├── main.py      # Servidor FastAPI
+└── venv/        # Ambiente virtual Python (não versionado)
 ```
 
 ### `frontend/index.html`
@@ -96,9 +100,71 @@ Como os gestos padrão estão desativados, o arraste é reimplementado à mão. 
 
 O som não é um arquivo: é gerado em tempo real com a Web Audio API. Ruído branco recebe um envelope de volume que sobe em 30% da duração e decai, mais estalos aleatórios simulando atrito do papel. Passa por um filtro *bandpass* com varredura de 1500Hz → 350Hz (o "whoosh" da página se afastando) e um *lowpass* em 3800Hz para tirar aspereza digital. Disparado no evento `changeState === "flipping"` e silenciável pelo botão de som.
 
+### `backend/main.py`
+
+API em FastAPI. Por enquanto só tem o endpoint raiz:
+
+| Método | Rota | Retorno |
+|---|---|---|
+| `GET` | `/` | `{"mensagem": "Olá, mundo! 🌍"}` |
+
+O endpoint `/figurinhas` que o `app.js` consome ainda não existe — enquanto isso, o álbum abre com os slots vazios.
+
 ## Como rodar
 
-O frontend é estático — basta servi-lo por HTTP (abrir o arquivo direto via `file://` quebra o `fetch`):
+### Backend
+
+Na primeira vez, criar o ambiente virtual e instalar as dependências:
+
+```bash
+cd backend
+python -m venv venv
+```
+
+Ativar a venv (o comando muda conforme o terminal):
+
+```powershell
+# PowerShell
+.\venv\Scripts\Activate.ps1
+```
+
+```cmd
+:: CMD
+venv\Scripts\activate.bat
+```
+
+```bash
+# Git Bash / Linux / macOS
+source venv/bin/activate      # no Windows: source venv/Scripts/activate
+```
+
+Com a venv ativa (o prompt passa a mostrar `(venv)`), instalar e subir o servidor:
+
+```bash
+pip install fastapi uvicorn
+uvicorn main:app --reload
+```
+
+A API sobe em `http://localhost:8000`. A flag `--reload` reinicia o servidor a cada alteração no código.
+
+Para sair da venv: `deactivate`.
+
+> No PowerShell, se a ativação for bloqueada por política de execução, rode uma vez:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+
+### Documentação automática
+
+O FastAPI gera a documentação da API sozinho, a partir das assinaturas das funções — não há nada a escrever à mão. Com o servidor rodando:
+
+| URL | O que é |
+|---|---|
+| `http://localhost:8000/docs` | **Swagger UI** — lista os endpoints e permite testá-los pelo navegador, com o botão *Try it out* |
+| `http://localhost:8000/redoc` | **ReDoc** — a mesma documentação em formato de leitura, mais adequada para consulta |
+| `http://localhost:8000/openapi.json` | O esquema **OpenAPI** cru, usado por ambas as páginas e por geradores de client |
+
+### Frontend
+
+O frontend é estático — basta servi-lo por HTTP (abrir o arquivo direto via `file://` quebra o `fetch`). Em outro terminal:
 
 ```bash
 cd frontend
