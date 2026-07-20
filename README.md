@@ -53,8 +53,23 @@ Dois servidores. Primeiro o backend:
 
 ```bash
 cd backend
+.\venv\Scripts\Activate.ps1        # PowerShell
 uvicorn main:app --reload          # :8000
 ```
+
+Ativar a venv antes é obrigatório — fora dela o `uvicorn` não está no PATH. O comando muda conforme o terminal: `venv\Scripts\activate.bat` no CMD, `source venv/Scripts/activate` no Git Bash, `source venv/bin/activate` no Linux/macOS. Para sair: `deactivate`.
+
+Na primeira vez, criar o ambiente e instalar as dependências:
+
+```bash
+cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install fastapi uvicorn
+```
+
+> Se o PowerShell bloquear a ativação por política de execução, rode uma vez:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
 Depois o frontend, em outro terminal (abrir o arquivo direto via `file://` quebra o `fetch`):
 
